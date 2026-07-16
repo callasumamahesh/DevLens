@@ -1,0 +1,127 @@
+/* DevLens Host Page Overlay Styles (Isolated in Shadow DOM) */
+
+:host {
+  --devlens-highlight-color: #06b6d4;
+  --devlens-margin-color: rgba(245, 158, 11, 0.3);
+  --devlens-padding-color: rgba(16, 185, 129, 0.25);
+  --devlens-content-color: rgba(6, 182, 212, 0.2);
+  --devlens-border-color: rgba(239, 68, 68, 0.3);
+  
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* Base overlay host wrapper */
+.devlens-overlay-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Highlighter visual bounding box overlays */
+.devlens-highlight-box {
+  position: absolute;
+  border: 1px solid var(--devlens-highlight-color);
+  background-color: var(--devlens-content-color);
+  transition: all 0.08s ease-out;
+  pointer-events: none;
+  z-index: 100000;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+}
+
+/* Box model overlays for margin/padding inspection */
+.devlens-margin-overlay {
+  position: absolute;
+  background-color: var(--devlens-margin-color);
+  pointer-events: none;
+  z-index: 99998;
+}
+
+.devlens-padding-overlay {
+  position: absolute;
+  background-color: var(--devlens-padding-color);
+  pointer-events: none;
+  z-index: 99999;
+}
+
+/* Hover Smart Tooltip UI */
+.devlens-tooltip {
+  position: absolute;
+  z-index: 100001;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #f8fafc;
+  font-family: var(--font-family);
+  font-size: 11px;
+  pointer-events: none;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: opacity 0.1s ease;
+}
+
+/* Tooltip Header */
+.devlens-tooltip-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+}
+
+.devlens-tooltip-tag {
+  color: #ff7b72;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.devlens-tooltip-selector {
+  color: #79c0ff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tooltip Body Dimensions & Stats */
+.devlens-tooltip-dims {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.devlens-tooltip-dim-val {
+  font-family: var(--font-mono);
+  color: var(--devlens-highlight-color);
+}
+
+.devlens-tooltip-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.devlens-tooltip-info-label {
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.3px;
+}
+
+.devlens-tooltip-info-val {
+  font-family: var(--font-mono);
+  color: #e2e8f0;
+}

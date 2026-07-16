@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevLens Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-icon">🔍</span>
+        <h1 class="logo-title">DevLens</h1>
+      </div>
+      <div class="status-toggle-wrapper">
+        <span class="status-label" id="statusLabel">Offline</span>
+        <label class="switch-container">
+          <input type="checkbox" id="globalToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="tab-navigation">
+      <button class="tab-btn active" id="tabBtnStyles" data-tab="panelStyles">CSS Inspector</button>
+      <button class="tab-btn" id="tabBtnAudit" data-tab="panelAudit">Audits</button>
+      <button class="tab-btn" id="tabBtnTimeline" data-tab="panelTimeline">Mutation Timeline</button>
+    </nav>
+
+    <!-- Content Panels -->
+    <main class="content-panels">
+      
+      <!-- CSS Inspector Panel -->
+      <section class="panel active" id="panelStyles">
+        <div class="panel-section selection-status" id="selectionStatus">
+          <p class="placeholder-text">Hover over any page element to begin inspecting computed styles.</p>
+        </div>
+
+        <div class="panel-section style-display hidden" id="styleDisplay">
+          <div class="element-info">
+            <span class="tag-name" id="elemTagName">div</span>
+            <span class="class-id-names" id="elemSelector">.class-name</span>
+          </div>
+
+          <!-- Computed Styles Breakdown -->
+          <div class="computed-group">
+            <h3>Layout & Sizing</h3>
+            <div class="computed-grid" id="layoutGrid">
+              <!-- Dynamically populated style keys -->
+            </div>
+          </div>
+
+          <div class="computed-group">
+            <h3>Typography</h3>
+            <div class="computed-grid" id="typographyGrid">
+              <!-- Dynamically populated style keys -->
+            </div>
+          </div>
+          
+          <div class="computed-group">
+            <h3>Box Model</h3>
+            <div class="box-model-container">
+              <div class="box-margin"><span class="box-label">margin</span>
+                <div class="box-border"><span class="box-label">border</span>
+                  <div class="box-padding"><span class="box-label">padding</span>
+                    <div class="box-content"><span id="boxWidth">0</span>x<span id="boxHeight">0</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Audits Panel (Accessibility + Responsiveness) -->
+      <section class="panel" id="panelAudit">
+        <div class="panel-section audit-controls">
+          <button class="action-btn" id="btnRunAudit">Run Audits</button>
+          <button class="action-btn secondary" id="btnClearAudit">Clear</button>
+        </div>
+
+        <div class="panel-section">
+          <h3>Accessibility Insights</h3>
+          <ul class="audit-list" id="a11yAuditList">
+            <li class="placeholder-item">No audits run yet. Click "Run Audits".</li>
+          </ul>
+        </div>
+
+        <div class="panel-section">
+          <h3>Layout & Sizing Warnings</h3>
+          <ul class="audit-list" id="responsiveAuditList">
+            <li class="placeholder-item">No audits run yet. Click "Run Audits".</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Mutation Timeline Panel -->
+      <section class="panel" id="panelTimeline">
+        <div class="timeline-controls">
+          <div class="control-row">
+            <label class="checkbox-container">
+              <input type="checkbox" id="observerToggle" checked>
+              <span class="checkmark"></span>
+              Record DOM mutations
+            </label>
+            <button class="action-btn secondary-small" id="btnClearTimeline">Clear Timeline</button>
+          </div>
+        </div>
+        <div class="timeline-list-wrapper">
+          <ul class="timeline-list" id="timelineList">
+            <li class="placeholder-item">Timeline is empty. Trigger page changes to record mutations.</li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer Settings -->
+    <footer class="app-footer">
+      <div class="setting-item">
+        <label for="highlightColor">Highlight Color:</label>
+        <div class="color-picker-wrapper">
+          <input type="color" id="highlightColor" value="#06b6d4">
+        </div>
+      </div>
+      <div class="hotkey-tip">Toggle shortcut: <kbd>Alt</kbd> + <kbd>D</kbd></div>
+    </footer>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

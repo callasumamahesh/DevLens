@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "DevLens",
+  "version": "1.0.0",
+  "description": "DevLens transforms any webpage into an interactive debugging workspace directly from your side panel.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "sidePanel"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Open DevLens"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "content/content.js",
+        "content/inspector.js",
+        "content/mutation.js",
+        "content/accessibility.js",
+        "content/responsive.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/content.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
