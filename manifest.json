@@ -26,11 +26,18 @@
       "js": [
         "content/content.js",
         "content/inspector.js",
-        "content/mutation.js",
         "content/accessibility.js",
         "content/responsive.js"
       ],
       "run_at": "document_end"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "content/logger.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
     }
   ],
   "web_accessible_resources": [

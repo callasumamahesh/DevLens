@@ -30,7 +30,7 @@
     <nav class="tab-navigation">
       <button class="tab-btn active" id="tabBtnStyles" data-tab="panelStyles">CSS Inspector</button>
       <button class="tab-btn" id="tabBtnAudit" data-tab="panelAudit">Audits</button>
-      <button class="tab-btn" id="tabBtnTimeline" data-tab="panelTimeline">Mutation Timeline</button>
+      <button class="tab-btn" id="tabBtnConsole" data-tab="panelConsole">AI Debug Console</button>
     </nav>
 
     <!-- Content Panels -->
@@ -63,6 +63,67 @@
             </div>
           </div>
           
+          <div class="computed-group">
+            <div class="playground-header">
+              <h3>Visual CSS Playground</h3>
+              <button id="btnResetPlayground" class="btn-reset-playground hidden">Reset</button>
+            </div>
+            <div class="playground-controls" id="playgroundControls">
+              <div class="control-group">
+                <div class="control-label">
+                  <span>Font Size</span>
+                  <span id="valPlaygroundFontSize">--</span>
+                </div>
+                <input type="range" id="sliderFontSize" min="8" max="72" value="16" disabled>
+              </div>
+              <div class="control-group">
+                <div class="control-label">
+                  <span>Padding</span>
+                  <span id="valPlaygroundPadding">--</span>
+                </div>
+                <input type="range" id="sliderPadding" min="0" max="100" value="0" disabled>
+              </div>
+              <div class="control-group">
+                <div class="control-label">
+                  <span>Margin</span>
+                  <span id="valPlaygroundMargin">--</span>
+                </div>
+                <input type="range" id="sliderMargin" min="0" max="100" value="0" disabled>
+              </div>
+              <div class="control-group">
+                <div class="control-label">
+                  <span>Border Radius</span>
+                  <span id="valPlaygroundBorderRadius">--</span>
+                </div>
+                <input type="range" id="sliderBorderRadius" min="0" max="50" value="0" disabled>
+              </div>
+              <div class="control-group">
+                <div class="control-label">
+                  <span>Opacity</span>
+                  <span id="valPlaygroundOpacity">--</span>
+                </div>
+                <input type="range" id="sliderOpacity" min="0" max="100" value="100" disabled>
+              </div>
+              <div class="control-group-row">
+                <div class="control-group half-width">
+                  <div class="control-label"><span>Text Color</span></div>
+                  <input type="color" id="colorText" value="#ffffff" disabled>
+                </div>
+                <div class="control-group half-width">
+                  <div class="control-label"><span>Bg Color</span></div>
+                  <input type="color" id="colorBg" value="#000000" disabled>
+                </div>
+              </div>
+            </div>
+            <div class="playground-export hidden" id="playgroundExportContainer">
+              <div class="export-header">
+                <h4>Modified CSS Changes:</h4>
+                <button id="btnCopyPlaygroundChanges" class="btn-copy-changes">Copy</button>
+              </div>
+              <textarea id="playgroundCssCode" class="playground-code-textarea" spellcheck="false" placeholder="/* Adjust visual playground sliders above or type custom CSS here */" disabled></textarea>
+            </div>
+          </div>
+
           <div class="computed-group">
             <h3>Box Model</h3>
             <div class="box-model-container">
@@ -100,21 +161,17 @@
         </div>
       </section>
 
-      <!-- Mutation Timeline Panel -->
-      <section class="panel" id="panelTimeline">
+      <!-- AI Debug Console Panel -->
+      <section class="panel" id="panelConsole">
         <div class="timeline-controls">
           <div class="control-row">
-            <label class="checkbox-container">
-              <input type="checkbox" id="observerToggle" checked>
-              <span class="checkmark"></span>
-              Record DOM mutations
-            </label>
-            <button class="action-btn secondary-small" id="btnClearTimeline">Clear Timeline</button>
+            <h3>Diagnostic Error Logs</h3>
+            <button class="action-btn secondary-small" id="btnClearErrors">Clear Console</button>
           </div>
         </div>
         <div class="timeline-list-wrapper">
-          <ul class="timeline-list" id="timelineList">
-            <li class="placeholder-item">Timeline is empty. Trigger page changes to record mutations.</li>
+          <ul class="timeline-list" id="errorList">
+            <li class="placeholder-item">Console is empty. Reload or trigger scripts to capture console diagnostics.</li>
           </ul>
         </div>
       </section>

@@ -64,7 +64,6 @@
 
       // Notify sub-modules of the status change
       if (this.inspector) this.inspector.onStateChange(isActive);
-      if (this.mutation) this.mutation.onStateChange(isActive);
     },
 
     // Update global configs
@@ -116,12 +115,32 @@
         }
         break;
 
-      case 'toggleMutationRecording':
-        if (DevLens.mutation) {
-          DevLens.mutation.setRecording(message.recording);
+
+
+      case 'tweakStyle':
+        if (DevLens.active && DevLens.inspector) {
+          DevLens.inspector.tweakStyle(message.property, message.value);
           sendResponse({ success: true });
         } else {
-          sendResponse({ success: false, error: 'Mutation module not ready' });
+          sendResponse({ success: false, error: 'Inspector not active' });
+        }
+        break;
+
+      case 'resetTweak':
+        if (DevLens.active && DevLens.inspector) {
+          DevLens.inspector.resetTweak();
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ success: false, error: 'Inspector not active' });
+        }
+        break;
+
+      case 'applyCustomCSSRules':
+        if (DevLens.active && DevLens.inspector) {
+          DevLens.inspector.applyCustomCSSRules(message.cssText);
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ success: false, error: 'Inspector not active' });
         }
         break;
 
@@ -129,5 +148,24 @@
         sendResponse({ error: 'Unknown action' });
     }
     return true; // Keep message channel open for async response
+  });
+
+  // Listen for logs sent from MAIN world logger.js
+  window.addEventListener('message', (event) => {
+    // Only process events that originated from our own logger script
+    if (event.data && event.data.source === 'devlens-logger') {
+      try {
+        if (chrome.runtime && chrome.runtime.id) {
+          chrome.runtime.sendMessage({
+            action: 'pageError',
+            error: event.data
+          }).catch(() => {
+            // Fail silently if side panel is closed
+          });
+        }
+      } catch (err) {
+        // Context invalidated - ignore
+      }
+    }
   });
 })();

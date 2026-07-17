@@ -11,6 +11,7 @@
     overlayWrapper: null,
     backdropElement: null,
     isLocked: false,
+    originalStyleText: '',
 
     // Initialize UI elements in the Shadow DOM
     initUI() {
@@ -145,6 +146,7 @@
       if (target === document.body || target === document.documentElement) {
         if (this.isLocked) {
           this.isLocked = false;
+          this.originalStyleText = '';
           this.highlightElement.classList.remove('locked');
           this.tooltipElement.classList.remove('locked');
           const badge = this.tooltipElement.querySelector('.devlens-tooltip-locked-badge');
@@ -156,6 +158,7 @@
       if (this.isLocked && this.hoveredElement === target) {
         // Toggle Unlock if clicking the same locked element again
         this.isLocked = false;
+        this.originalStyleText = '';
         this.highlightElement.classList.remove('locked');
         this.tooltipElement.classList.remove('locked');
         const badge = this.tooltipElement.querySelector('.devlens-tooltip-locked-badge');
@@ -168,6 +171,10 @@
         // Lock on element click
         this.isLocked = true;
         this.hoveredElement = target;
+        
+        // Cache original style text for resetting tweaks
+        this.originalStyleText = target.style.cssText;
+
         this.updateHighlight(target);
         this.updateTooltipContent(target);
         this.highlightElement.classList.add('locked');
@@ -312,6 +319,7 @@
       // Collect CSS stats
       const elementDetails = {
         tagName: element.tagName.toLowerCase(),
+        isLocked: this.isLocked,
         selector: `${element.id ? '#' + element.id : ''}${element.className && typeof element.className === 'string' ? '.' + element.className.trim().split(/\s+/).join('.') : ''}`,
         metrics: {
           width: Math.round(rect.width),
@@ -336,6 +344,9 @@
           }
         },
         styles: {
+          backgroundColor: computed.backgroundColor,
+          borderRadius: computed.borderRadius,
+          opacity: computed.opacity,
           layout: {
             display: computed.display,
             position: computed.position,
@@ -368,6 +379,41 @@
       } catch (err) {
         // Context invalidated - ignore
       }
+    },
+
+    tweakStyle(property, value) {
+      if (!this.isLocked || !this.hoveredElement) return;
+
+      // Apply style dynamically
+      this.hoveredElement.style[property] = value;
+
+      // Recalculate highlighter overlays
+      this.updateHighlight(this.hoveredElement);
+
+      // Re-send updated styling metrics to Box Model
+      this.sendElementDetailsToSidepanel(this.hoveredElement);
+    },
+
+    resetTweak() {
+      if (!this.isLocked || !this.hoveredElement) return;
+
+      // Revert to original inline style text
+      this.hoveredElement.style.cssText = this.originalStyleText || '';
+
+      // Refresh overlays
+      this.updateHighlight(this.hoveredElement);
+      this.sendElementDetailsToSidepanel(this.hoveredElement);
+    },
+
+    applyCustomCSSRules(cssRulesText) {
+      if (!this.isLocked || !this.hoveredElement) return;
+
+      // Apply cumulative overrides by appending to base styles
+      this.hoveredElement.style.cssText = (this.originalStyleText || '') + ';' + cssRulesText;
+
+      // Refresh overlays
+      this.updateHighlight(this.hoveredElement);
+      this.sendElementDetailsToSidepanel(this.hoveredElement);
     }
   };
 
