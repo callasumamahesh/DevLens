@@ -9,6 +9,8 @@
     highlightElement: null,
     tooltipElement: null,
     overlayWrapper: null,
+    backdropElement: null,
+    isLocked: false,
 
     // Initialize UI elements in the Shadow DOM
     initUI() {
@@ -18,6 +20,11 @@
       this.overlayWrapper = document.createElement('div');
       this.overlayWrapper.className = 'devlens-overlay-wrapper';
       DevLens.shadowRoot.appendChild(this.overlayWrapper);
+
+      // Create backdrop spotlight element
+      this.backdropElement = document.createElement('div');
+      this.backdropElement.className = 'devlens-backdrop';
+      this.overlayWrapper.appendChild(this.backdropElement);
 
       // Create highlighter bounding box
       this.highlightElement = document.createElement('div');
@@ -38,8 +45,10 @@
         this.overlayWrapper = null;
         this.highlightElement = null;
         this.tooltipElement = null;
+        this.backdropElement = null;
       }
       this.hoveredElement = null;
+      this.isLocked = false;
     },
 
     // Handles activation / deactivation state from the core orchestrator
@@ -57,10 +66,12 @@
       this._boundMouseOver = this.handleMouseOver.bind(this);
       this._boundMouseMove = this.handleMouseMove.bind(this);
       this._boundScroll = this.handleScroll.bind(this);
+      this._boundPageClick = this.handlePageClick.bind(this);
 
       document.addEventListener('mouseover', this._boundMouseOver, true);
       document.addEventListener('mousemove', this._boundMouseMove, true);
       document.addEventListener('scroll', this._boundScroll, true);
+      document.addEventListener('click', this._boundPageClick, true);
     },
 
     stopHoverTracking() {
@@ -69,6 +80,11 @@
         document.removeEventListener('mousemove', this._boundMouseMove, true);
         document.removeEventListener('scroll', this._boundScroll, true);
         
+        if (this._boundPageClick) {
+          document.removeEventListener('click', this._boundPageClick, true);
+          this._boundPageClick = null;
+        }
+
         this._boundMouseOver = null;
         this._boundMouseMove = null;
         this._boundScroll = null;
@@ -77,7 +93,7 @@
 
     // Event Handler: Mouse Over page elements
     handleMouseOver(e) {
-      if (!DevLens.active) return;
+      if (!DevLens.active || this.isLocked) return;
 
       const target = e.target;
 
@@ -99,7 +115,7 @@
 
     // Event Handler: Mouse Move (to position tooltip)
     handleMouseMove(e) {
-      if (!DevLens.active || !this.tooltipElement || !this.hoveredElement) return;
+      if (!DevLens.active || this.isLocked || !this.tooltipElement || !this.hoveredElement) return;
       this.positionTooltip(e.clientX, e.clientY);
     },
 
@@ -107,6 +123,57 @@
     handleScroll() {
       if (!DevLens.active || !this.hoveredElement) return;
       this.updateHighlight(this.hoveredElement);
+    },
+
+    // Event Handler: Click webpage element (captures & locks/unlocks inspection state)
+    handlePageClick(e) {
+      if (!DevLens.active) return;
+
+      const target = e.target;
+      if (!target) return;
+
+      // Ignore clicks on our own Shadow DOM elements
+      if (target === DevLens.shadowHost || DevLens.shadowHost?.contains(target)) {
+        return;
+      }
+
+      // Prevent navigating or executing standard buttons actions
+      e.preventDefault();
+      e.stopPropagation();
+
+      // If clicking background body/html, unlock
+      if (target === document.body || target === document.documentElement) {
+        if (this.isLocked) {
+          this.isLocked = false;
+          this.highlightElement.classList.remove('locked');
+          this.tooltipElement.classList.remove('locked');
+          const badge = this.tooltipElement.querySelector('.devlens-tooltip-locked-badge');
+          if (badge) badge.remove();
+        }
+        return;
+      }
+
+      if (this.isLocked && this.hoveredElement === target) {
+        // Toggle Unlock if clicking the same locked element again
+        this.isLocked = false;
+        this.highlightElement.classList.remove('locked');
+        this.tooltipElement.classList.remove('locked');
+        const badge = this.tooltipElement.querySelector('.devlens-tooltip-locked-badge');
+        if (badge) badge.remove();
+
+        // Immediately frame under current cursor
+        this.updateHighlight(target);
+        this.updateTooltipContent(target);
+      } else {
+        // Lock on element click
+        this.isLocked = true;
+        this.hoveredElement = target;
+        this.updateHighlight(target);
+        this.updateTooltipContent(target);
+        this.highlightElement.classList.add('locked');
+        this.tooltipElement.classList.add('locked');
+        this.sendElementDetailsToSidepanel(target);
+      }
     },
 
     // Compute dimensions and draw highlight box overlay
@@ -122,6 +189,28 @@
       this.highlightElement.style.left = `${rect.left + scrollLeft}px`;
       this.highlightElement.style.width = `${rect.width}px`;
       this.highlightElement.style.height = `${rect.height}px`;
+
+      // Update backdrop clip-path cutout hole coordinates
+      if (this.backdropElement) {
+        this.backdropElement.style.opacity = '1';
+        const L = rect.left;
+        const T = rect.top;
+        const R = rect.right;
+        const B = rect.bottom;
+
+        this.backdropElement.style.clipPath = `polygon(
+          0px 0px, 
+          100vw 0px, 
+          100vw 100vh, 
+          0px 100vh, 
+          0px 0px, 
+          ${L}px ${T}px, 
+          ${L}px ${B}px, 
+          ${R}px ${B}px, 
+          ${R}px ${T}px, 
+          ${L}px ${T}px
+        )`;
+      }
     },
 
     // Extract styles and update Tooltip HTML contents
@@ -152,11 +241,14 @@
       const colorVal = computed.color;
       const bgVal = computed.backgroundColor;
 
+      const lockedBadgeHtml = this.isLocked ? `<span class="devlens-tooltip-locked-badge">Locked</span>` : '';
+
       // Populate tooltip contents
       this.tooltipElement.innerHTML = `
         <div class="devlens-tooltip-header">
           <span class="devlens-tooltip-tag">${tagName}</span>
           <span class="devlens-tooltip-selector">${selector}</span>
+          ${lockedBadgeHtml}
         </div>
         <div class="devlens-tooltip-dims">
           <span>Dimensions:</span>

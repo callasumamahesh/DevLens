@@ -50,6 +50,17 @@ function initializeSidePanel() {
     });
   });
 
+  // HTML escaping utility to prevent XSS/HTML Injection when displaying DOM changes
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // 2. Active Tab State Sync Helper
   async function getActiveTab() {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
@@ -63,7 +74,7 @@ function initializeSidePanel() {
       if (!activeTab) return null;
       return await chrome.tabs.sendMessage(activeTab.id, message);
     } catch (err) {
-      console.warn("DevLens: Content script not ready on active tab.", err);
+      console.log("DevLens: Content script not ready on active tab.", err.message);
       return null;
     }
   }
@@ -136,7 +147,7 @@ function initializeSidePanel() {
     for (const [propName, propVal] of Object.entries(layoutProps)) {
       if (propVal && propVal !== 'none' && propVal !== 'auto') {
         const title = propName.replace(/([A-Z])/g, "-$1").toLowerCase();
-        layoutGrid.innerHTML += `<dt>${title}</dt><dd>${propVal}</dd>`;
+        layoutGrid.innerHTML += `<dt>${escapeHTML(title)}</dt><dd>${escapeHTML(propVal)}</dd>`;
       }
     }
 
@@ -146,7 +157,7 @@ function initializeSidePanel() {
     for (const [propName, propVal] of Object.entries(typoProps)) {
       if (propVal && propVal !== 'normal' && propVal !== 'none') {
         const title = propName.replace(/([A-Z])/g, "-$1").toLowerCase();
-        typographyGrid.innerHTML += `<dt>${title}</dt><dd>${propVal}</dd>`;
+        typographyGrid.innerHTML += `<dt>${escapeHTML(title)}</dt><dd>${escapeHTML(propVal)}</dd>`;
       }
     }
 
@@ -201,14 +212,20 @@ function initializeSidePanel() {
       const li = document.createElement('li');
       li.className = 'timeline-item';
 
+      const escapedType = escapeHTML(mut.type);
+      const escapedTime = escapeHTML(mut.time);
+      const escapedDesc = escapeHTML(mut.description);
+      const escapedDetails = escapeHTML(mut.details);
+      const escapedSelector = escapeHTML(mut.selector);
+
       li.innerHTML = `
         <div class="timeline-meta">
-          <span class="mutation-type-badge ${mut.type}">${mut.type}</span>
-          <span class="mutation-time">${mut.time}</span>
+          <span class="mutation-type-badge ${escapedType}">${escapedType}</span>
+          <span class="mutation-time">${escapedTime}</span>
         </div>
-        <div class="mutation-desc">${mut.description}</div>
-        <div class="mutation-details" title="${mut.details}">${mut.details}</div>
-        <div class="mutation-target-ref">Selector: ${mut.selector}</div>
+        <div class="mutation-desc">${escapedDesc}</div>
+        <div class="mutation-details" title="${escapedDetails}">${escapedDetails}</div>
+        <div class="mutation-target-ref">Selector: ${escapedSelector}</div>
       `;
 
       timelineList.insertBefore(li, timelineList.firstChild);
@@ -258,7 +275,7 @@ function initializeSidePanel() {
         <li class="audit-item success">
           <span class="audit-badge success">PASS</span>
           <div class="audit-text">
-            <span class="audit-message">${successMsg}</span>
+            <span class="audit-message">${escapeHTML(successMsg)}</span>
           </div>
         </li>
       `;
@@ -267,14 +284,19 @@ function initializeSidePanel() {
 
     issues.forEach(issue => {
       const li = document.createElement('li');
-      li.className = `audit-item ${issue.type}`;
+      const escapedType = escapeHTML(issue.type);
+      li.className = `audit-item ${escapedType}`;
+
+      const escapedMessage = escapeHTML(issue.message);
+      const escapedElement = escapeHTML(issue.element);
+      const escapedDetails = escapeHTML(issue.details);
 
       li.innerHTML = `
-        <span class="audit-badge ${issue.type}">${issue.type === 'danger' ? 'FAIL' : 'WARN'}</span>
+        <span class="audit-badge ${escapedType}">${escapedType === 'danger' ? 'FAIL' : 'WARN'}</span>
         <div class="audit-text">
-          <span class="audit-message">${issue.message}</span>
-          <span class="audit-element-ref">${issue.element}</span>
-          <span class="audit-element-ref" style="color: var(--text-muted)">${issue.details}</span>
+          <span class="audit-message">${escapedMessage}</span>
+          <span class="audit-element-ref">${escapedElement}</span>
+          <span class="audit-element-ref" style="color: var(--text-muted)">${escapedDetails}</span>
         </div>
       `;
 

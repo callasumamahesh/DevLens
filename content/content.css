@@ -125,3 +125,39 @@
   font-family: var(--font-mono);
   color: #e2e8f0;
 }
+
+/* Backdrop Spotlight Filter */
+.devlens-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  pointer-events: none;
+  z-index: 99997;
+  transition: opacity 0.15s ease, clip-path 0.08s ease-out;
+  opacity: 0;
+}
+
+/* Locked Highlighter Highlight Styling */
+.devlens-highlight-box.locked {
+  border-color: #a855f7;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+  border-width: 2px;
+}
+
+/* Locked Tooltip UI indicator */
+.devlens-tooltip-locked-badge {
+  background-color: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-left: auto;
+}
