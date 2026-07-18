@@ -60,10 +60,9 @@
         console.log('DevLens: Activated on page.');
       } else {
         console.log('DevLens: Deactivated.');
+        // Force deactivate the inspector highlights when deactivating globally
+        if (this.inspector) this.inspector.onStateChange(false);
       }
-
-      // Notify sub-modules of the status change
-      if (this.inspector) this.inspector.onStateChange(isActive);
     },
 
     // Update global configs
@@ -141,6 +140,15 @@
           sendResponse({ success: true });
         } else {
           sendResponse({ success: false, error: 'Inspector not active' });
+        }
+        break;
+
+      case 'setInspectorActive':
+        if (DevLens.active && DevLens.inspector) {
+          DevLens.inspector.onStateChange(message.active);
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ success: false, error: 'DevLens is not active' });
         }
         break;
 

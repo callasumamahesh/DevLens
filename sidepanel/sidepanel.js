@@ -57,9 +57,21 @@ function initializeSidePanel() {
   let activeLockedDetails = null;
   let modifiedStyles = {};
 
+  // Update browser page highlighting inspector active status based on the selected Side Panel Tab
+  async function updateInspectorState() {
+    const isGlobalActive = globalToggle.checked;
+    const activeTabBtn = document.querySelector('.tab-btn.active');
+    const isInspectorTab = activeTabBtn && activeTabBtn.getAttribute('data-tab') === 'panelStyles';
+    
+    await sendMessageToContent({
+      action: 'setInspectorActive',
+      active: isGlobalActive && isInspectorTab
+    });
+  }
+
   // 1. Tab Switching Logic
   tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       // Deactivate all tab buttons and panels
       tabButtons.forEach(b => b.classList.remove('active'));
       panels.forEach(p => p.classList.remove('active'));
@@ -68,6 +80,9 @@ function initializeSidePanel() {
       btn.classList.add('active');
       const targetPanelId = btn.getAttribute('data-tab');
       document.getElementById(targetPanelId).classList.add('active');
+
+      // Update inspector state
+      await updateInspectorState();
     });
   });
 
@@ -162,6 +177,7 @@ function initializeSidePanel() {
               action: 'updateConfig',
               config: { highlightColor: highlightColorInput.value }
             });
+            await updateInspectorState();
           }
         }
       }
@@ -188,6 +204,7 @@ function initializeSidePanel() {
 
     // Propagate activation status to content scripts
     await sendMessageToContent({ action: 'toggleState', active: isActive });
+    await updateInspectorState();
   });
 
   // Synchronize toggle button with initial tab state
@@ -199,6 +216,7 @@ function initializeSidePanel() {
         statusLabel.textContent = 'Active';
         statusLabel.classList.add('active');
       }
+      await updateInspectorState();
     }
   }
   syncInitialToggleState();
