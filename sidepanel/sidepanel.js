@@ -100,22 +100,14 @@ function initializeSidePanel() {
     }
   }
 
-  // Reset Side Panel UI to default disconnected placeholder state on page reload/navigation
-  function resetSidePanelUI() {
-    // Uncheck toggle switches
-    globalToggle.checked = false;
-    statusLabel.textContent = 'Offline';
-    statusLabel.classList.remove('active');
-    
-
-    
-    // Hide panels and display selection status placeholders
-    selectionStatus.classList.remove('hidden');
-    styleDisplay.classList.add('hidden');
-    
-    // Clear styles states
+  // Clear styles selection, error listings, and audits for a fresh tab load
+  function clearTabPanelData() {
     activeLockedDetails = null;
     modifiedStyles = {};
+    
+    // Clear selection statuses
+    selectionStatus.classList.remove('hidden');
+    styleDisplay.classList.add('hidden');
     
     // Reset range inputs and labels
     const controls = [sliderFontSize, sliderPadding, sliderMargin, sliderBorderRadius, sliderOpacity, colorText, colorBg];
@@ -131,6 +123,7 @@ function initializeSidePanel() {
     
     btnResetPlayground.classList.add('hidden');
     playgroundExportContainer.classList.add('hidden');
+    if (playgroundCssCode) playgroundCssCode.value = '';
     
     // Reset lists
     errorList.innerHTML = '<li class="placeholder-item">Console is empty. Reload or trigger scripts to capture console diagnostics.</li>';
@@ -138,12 +131,39 @@ function initializeSidePanel() {
     responsiveAuditList.innerHTML = '<li class="placeholder-item">No audits run yet. Click "Run Audits".</li>';
   }
 
-  // Listen for active tab updates (reloads/navigations) to flush sidepanel states
+  // Reset Side Panel UI to default disconnected placeholder state on page reload/navigation
+  function resetSidePanelUI() {
+    // Uncheck toggle switches
+    globalToggle.checked = false;
+    statusLabel.textContent = 'Offline';
+    statusLabel.classList.remove('active');
+    
+    clearTabPanelData();
+  }
+
+  // Listen for active tab updates (reloads/navigations) to manage states
   chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     try {
       const activeTab = await getActiveTab();
-      if (activeTab && tabId === activeTab.id && changeInfo.status === 'loading') {
-        resetSidePanelUI();
+      if (activeTab && tabId === activeTab.id) {
+        if (changeInfo.status === 'loading') {
+          if (globalToggle.checked) {
+            // Persist online state, but flush old tab details
+            clearTabPanelData();
+          } else {
+            // Full reset to offline placeholder
+            resetSidePanelUI();
+          }
+        } else if (changeInfo.status === 'complete') {
+          if (globalToggle.checked) {
+            // Re-activate content scripts on the newly refreshed tab context!
+            await sendMessageToContent({ action: 'toggleState', active: true });
+            await sendMessageToContent({
+              action: 'updateConfig',
+              config: { highlightColor: highlightColorInput.value }
+            });
+          }
+        }
       }
     } catch (err) {
       // Fail silently
